@@ -5,6 +5,7 @@
 package com.mycompany.easykanban;
 //importing the ImageIcon package to set and display icons
 import javax.swing.ImageIcon;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -55,59 +56,54 @@ public class RegistrationPage extends javax.swing.JFrame {
         iconPanel = new javax.swing.JPanel();
         iconLabel2 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("EasyKanaban Registration");
-        setBackground(new java.awt.Color(255, 255, 255));
+        UITheme.styleFrame(this, "EasyKanban Registration");
+        setName("frame"); // NOI18N
 
-        registrationPanel.setBackground(new java.awt.Color(165, 122, 255));
-        registrationPanel.setMaximumSize(new java.awt.Dimension(627, 370));
+        UITheme.stylePrimaryPanel(registrationPanel);
+        registrationPanel.setMaximumSize(new java.awt.Dimension(435, 385));
 
-        firstnameLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        firstnameLabel.setForeground(new java.awt.Color(0, 0, 0));
         firstnameLabel.setText("First name:");
+        UITheme.styleLabel(firstnameLabel);
 
-        lastnameLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        lastnameLabel.setForeground(new java.awt.Color(0, 0, 0));
         lastnameLabel.setText("Last name:");
+        UITheme.styleLabel(lastnameLabel);
 
-        usernameLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        usernameLabel.setForeground(new java.awt.Color(0, 0, 0));
         usernameLabel.setText("Username:");
+        UITheme.styleLabel(usernameLabel);
 
-        firstnameText.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        UITheme.styleInputField(firstnameText);
 
-        lastnameText.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        UITheme.styleInputField(lastnameText);
 
-        usernameText.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        UITheme.styleInputField(usernameText);
 
-        passwordLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        passwordLabel.setForeground(new java.awt.Color(0, 0, 0));
         passwordLabel.setText("Password:");
+        UITheme.styleLabel(passwordLabel);
 
-        passwordText.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        UITheme.stylePasswordField(passwordText);
 
-        registerButton.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         registerButton.setText("Register");
+        UITheme.stylePrimaryButton(registerButton);
         registerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 registerButtonActionPerformed(evt);
             }
         });
 
-        resetButton.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         resetButton.setText("Reset");
+        UITheme.styleSecondaryButton(resetButton);
         resetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetButtonActionPerformed(evt);
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 3, 22)); // NOI18N
         jLabel1.setText("One more step to go!");
         jLabel1.setToolTipText("");
+        UITheme.styleHeaderLabel(jLabel1);
 
-        loginLabel.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         loginLabel.setText("Login to existing account");
+        UITheme.styleLinkLabel(loginLabel);
         loginLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mouseLabelClicked(evt);
@@ -177,11 +173,11 @@ public class RegistrationPage extends javax.swing.JFrame {
                 .addGap(14, 14, 14))
         );
 
-        iconPanel.setBackground(new java.awt.Color(255, 255, 255));
+        UITheme.styleSidebarPanel(iconPanel);
 
-        iconLabel2.setBackground(new java.awt.Color(255, 255, 255));
-        iconLabel2.setForeground(new java.awt.Color(0, 0, 0));
-        iconLabel2.setText("jLabel1");
+        iconLabel2.setText("EasyKanban");
+        UITheme.styleTitleLabel(iconLabel2);
+        iconLabel2.setHorizontalAlignment(SwingConstants.CENTER);
 
         javax.swing.GroupLayout iconPanelLayout = new javax.swing.GroupLayout(iconPanel);
         iconPanel.setLayout(iconPanelLayout);

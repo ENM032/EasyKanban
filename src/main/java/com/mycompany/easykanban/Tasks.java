@@ -181,16 +181,16 @@ public class Tasks {
                 taskDurations.setLength(taskDurations.length() - 2);
             }
             
-            JOptionPane.showMessageDialog(null, 
+            UITheme.showSuccessMessage(
                 "Developer names: " + developers + 
                 "\nTask names: " + taskNames + 
                 "\nTask durations: " + taskDurations, 
-                "All completed tasks", JOptionPane.INFORMATION_MESSAGE);
+                "All completed tasks");
                 
         } catch (Exception e) {
             LOGGER.severe("Error displaying completed tasks: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Database error occurred", 
-                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            UITheme.showErrorMessage("Database error occurred", 
+                "Something went wrong!");
         }
     }
     
@@ -226,18 +226,18 @@ public class Tasks {
                 taskStatuses.append(task.getTaskStatus());
             }
             
-            JOptionPane.showMessageDialog(null, 
+            UITheme.showSuccessMessage(
                 "Task name: " + taskNames + 
                 "\nDeveloper name: " + developerNames + 
                 "\nTask status: " + taskStatuses, 
-                "Task details found", JOptionPane.INFORMATION_MESSAGE);
+                "Task details found");
                 
             return developerNames.toString().trim() + ", " + taskNames.toString().trim();
             
         } catch (Exception e) {
             LOGGER.severe("Error finding task by name: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Database error occurred", 
-                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            UITheme.showErrorMessage("Database error occurred", 
+                "Something went wrong!");
             return "Nothing found";
         }
     }
@@ -252,9 +252,9 @@ public class Tasks {
             List<DatabaseManager.Task> tasks = dbManager.searchTasksByDeveloper(developerName, username);
             
             if (tasks.isEmpty()) {
-                JOptionPane.showMessageDialog(null, 
+                UITheme.showErrorMessage(
                     "Could not find any tasks associated to: \"" + developerName + "\"", 
-                    "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                    "Something went wrong!");
                 return "Nothing found";
             }
             
@@ -267,16 +267,16 @@ public class Tasks {
                 taskNames.append(tasks.get(i).getTaskName());
             }
             
-            JOptionPane.showMessageDialog(null, 
+            UITheme.showSuccessMessage(
                 "Task name/s found: \n" + taskNames, 
-                "Developer task details found", JOptionPane.INFORMATION_MESSAGE);
+                "Developer task details found");
                 
             return taskNames.toString().trim();
             
         } catch (Exception e) {
             LOGGER.severe("Error finding tasks by developer: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Database error occurred", 
-                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            UITheme.showErrorMessage("Database error occurred", 
+                "Something went wrong!");
             return "Nothing found";
         }
     }
@@ -392,15 +392,15 @@ public class Tasks {
                   arrayIndex = i;
                 }
             } 
-         JOptionPane.showMessageDialog(null, "Developer name: " + developerArray[arrayIndex] +"\nTask name: " + 
-                                      taskNamesArray[arrayIndex], "Task details for the highest duration", JOptionPane.INFORMATION_MESSAGE);
+         UITheme.showSuccessMessage("Developer name: " + developerArray[arrayIndex] +"\nTask name: " + 
+                                      taskNamesArray[arrayIndex], "Task details for the highest duration");
          
          message = "Developer name: " + developerArray[arrayIndex] +"\nTask name: " + taskNamesArray[arrayIndex] +
                     "\nTask duration: " + taskDurationsArray[arrayIndex];
      }
      catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-             JOptionPane.showMessageDialog(null, "Could not find the highest duration\n" +
-                                           "Add task details first", "Something went wrong!", JOptionPane.ERROR_MESSAGE);  
+             UITheme.showErrorMessage("Could not find the highest duration\n" +
+                                           "Add task details first", "Something went wrong!");  
            
              message = "Duration not found";
      }
@@ -440,12 +440,12 @@ public class Tasks {
          taskNames.deleteCharAt(taskNames.length()-2);
          taskDurations.deleteCharAt(taskDurations.length()-2);
          
-         JOptionPane.showMessageDialog(null, "Developer names: " + developers + "\nTask names: " + taskNames +
-                                       "\nTask durations: " + taskDurations, "All completed tasks", JOptionPane.INFORMATION_MESSAGE);
+         UITheme.showSuccessMessage("Developer names: " + developers + "\nTask names: " + taskNames +
+                                        "\nTask durations: " + taskDurations, "All completed tasks");
         }
         catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-             JOptionPane.showMessageDialog(null, "No completed tasks were found" +
-                                          "\nadd completed task details first", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+             UITheme.showErrorMessage("No completed tasks were found" +
+                                          "\nadd completed task details first", "Something went wrong!");
         }    
     }
     
@@ -472,14 +472,14 @@ public class Tasks {
          developerNames.deleteCharAt(developerNames.length()-2);
          taskStatuses.deleteCharAt(taskStatuses.length()-2);
           
-         JOptionPane.showMessageDialog(null, "Task name: " + taskNames +
+         UITheme.showSuccessMessage("Task name: " + taskNames +
                                        "\nDeveloper name: " + developerNames + 
-                                       "\nTask status: " + taskStatuses, "Task details found", JOptionPane.INFORMATION_MESSAGE);
+                                       "\nTask status: " + taskStatuses, "Task details found");
          message = developerNames.toString().trim() + ", " + taskNames.toString().trim();
         }
         catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-             JOptionPane.showMessageDialog(null, "Could not find task name : " + "\""+ lookForValue + "\"" + 
-                                          "\ncheck spelling of task or add task details", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+             UITheme.showErrorMessage("Could not find task name : " + "\""+ lookForValue + "\"" + 
+                                          "\ncheck spelling of task or add task details", "Something went wrong!");
              message = "Nothing found";
         }
      return message;
@@ -501,12 +501,12 @@ public class Tasks {
             
         //deletes the comma and whitespace at the end of each stringbuilder 
         taskNames.deleteCharAt(taskNames.length()-2);
-        JOptionPane.showMessageDialog(null, "Task name/s found: \n" + taskNames, 
-                                          "Developer task details found", JOptionPane.INFORMATION_MESSAGE);
+        UITheme.showSuccessMessage("Task name/s found: \n" + taskNames, 
+                                          "Developer task details found");
         message = taskNames.toString().trim();
         }
         catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-               JOptionPane.showMessageDialog(null, "Could not find any tasks associated to: " + "\""+ lookForValue + "\"", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+               UITheme.showErrorMessage("Could not find any tasks associated to: " + "\""+ lookForValue + "\"", "Something went wrong!");
                message = "Nothing found";
         }
      return message;
@@ -580,13 +580,13 @@ public class Tasks {
             LoginPage.setTaskDurations(durations);
             LoginPage.setTaskNumbers(numbers);
              
-         JOptionPane.showMessageDialog(null, "Task/s successfully deleted", "Deletion of tasks", JOptionPane.INFORMATION_MESSAGE);
+         UITheme.showSuccessMessage("Task/s successfully deleted", "Deletion of tasks");
             
          message = "Entry " + "\""+ lookForValue + "\"" + " successfully deleted";
         }
         catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-             JOptionPane.showMessageDialog(null, "No task/s have been deleted\ntask: " + "\""+ lookForValue + "\"" +
-                                           " does not exist", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+             UITheme.showErrorMessage("No task/s have been deleted\ntask: " + "\""+ lookForValue + "\"" +
+                                           " does not exist", "Something went wrong!");
             
              message = "Nothing deleted";
         }
@@ -632,14 +632,14 @@ public class Tasks {
          taskIDs.deleteCharAt(taskIDs.length()-2);
          taskDurations.deleteCharAt(taskDurations.length()-2);
             
-         JOptionPane.showMessageDialog(null, "All task Statuses: " + taskStatuses + "\nAll developer names: " + developers +
+         UITheme.showSuccessMessage("All task Statuses: " + taskStatuses + "\nAll developer names: " + developers +
                      "\nAll task numbers: " + taskNumbers + "\nAll task names: " + taskNames + "\nAll task descriptions: " + taskDescriptions +
-                     "\nAll task IDs: " + taskIDs + "\nAll task durations: " + taskDurations, "Final task summary", JOptionPane.INFORMATION_MESSAGE);
+                     "\nAll task IDs: " + taskIDs + "\nAll task durations: " + taskDurations, "Final task summary");
              
          message = "Successfully displayed";
      }
      catch(IndexOutOfBoundsException | NullPointerException ioobeNnpe){
-            JOptionPane.showMessageDialog(null, "No tasks details available to display, please add task details first", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            UITheme.showErrorMessage("No tasks details available to display, please add task details first", "Something went wrong!");
             message = "Not displayed";   
      }
      return message;

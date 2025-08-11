@@ -8,6 +8,7 @@ import java.util.Date;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -76,55 +77,51 @@ public class LoginPage extends javax.swing.JFrame {
         pageSelector = new javax.swing.JPanel();
         menuLabel = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("EasyKanban Login");
-        setBackground(new java.awt.Color(255, 255, 255));
+        UITheme.styleFrame(this, "EasyKanban Login");
         setName("frame"); // NOI18N
 
-        loginPanel.setBackground(new java.awt.Color(165, 122, 255));
+        UITheme.stylePrimaryPanel(loginPanel);
         loginPanel.setMaximumSize(new java.awt.Dimension(435, 385));
 
-        loginButton.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         loginButton.setText("Login");
+        UITheme.stylePrimaryButton(loginButton);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loginButtonActionPerformed(evt);
             }
         });
 
-        resetButton.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         resetButton.setText("Reset");
+        UITheme.styleSecondaryButton(resetButton);
         resetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetButtonActionPerformed(evt);
             }
         });
 
-        usernameLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        usernameLabel.setForeground(new java.awt.Color(0, 0, 0));
         usernameLabel.setText("Username:");
+        UITheme.styleLabel(usernameLabel);
 
-        passwordLabel.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        passwordLabel.setForeground(new java.awt.Color(0, 0, 0));
         passwordLabel.setText("Password:");
+        UITheme.styleLabel(passwordLabel);
 
-        usernameText.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        UITheme.styleInputField(usernameText);
 
-        passwordText.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        UITheme.stylePasswordField(passwordText);
 
-        headerLabel.setFont(new java.awt.Font("Segoe UI", 3, 26)); // NOI18N
         headerLabel.setText("Welcome back!");
+        UITheme.styleHeaderLabel(headerLabel);
 
-        registrationLabel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         registrationLabel.setText("Don't have an account? Sign Up HERE");
+        UITheme.styleLinkLabel(registrationLabel);
         registrationLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mouseLabelClicked(evt);
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel1.setText("Log In to use EasyKanban services");
+        UITheme.styleTitleLabel(jLabel1);
 
         javax.swing.GroupLayout loginPanelLayout = new javax.swing.GroupLayout(loginPanel);
         loginPanel.setLayout(loginPanelLayout);
@@ -183,11 +180,11 @@ public class LoginPage extends javax.swing.JFrame {
                 .addContainerGap(20, Short.MAX_VALUE))
         );
 
-        pageSelector.setBackground(new java.awt.Color(255, 255, 255));
+        UITheme.styleSidebarPanel(pageSelector);
 
-        menuLabel.setBackground(new java.awt.Color(70, 130, 180));
-        menuLabel.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        menuLabel.setText("Icon here");
+        menuLabel.setText("EasyKanban");
+        UITheme.styleTitleLabel(menuLabel);
+        menuLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         javax.swing.GroupLayout pageSelectorLayout = new javax.swing.GroupLayout(pageSelector);
         pageSelector.setLayout(pageSelectorLayout);
@@ -337,8 +334,8 @@ public class LoginPage extends javax.swing.JFrame {
                     
                      
                     if(taskStatus == null){
-                       JOptionPane.showMessageDialog(null, "Task status cannot be empty\nplease " +
-                                                    "select a task status", "Something went wrong", JOptionPane.ERROR_MESSAGE); 
+                       UITheme.showErrorMessage("Task status cannot be empty\nplease " +
+                                                    "select a task status", "Something went wrong"); 
                     }
                     else{
                       if(Tasks.messageForTaskDescription(taskDescription).equals("Task successfully captured")){
@@ -346,10 +343,10 @@ public class LoginPage extends javax.swing.JFrame {
                          Tasks.createTaskNumber();
                          taskID = Tasks.createTaskID(taskName, developerDetails);
                          taskNumber = Tasks.getTaskNumber();
-                         JOptionPane.showMessageDialog(null, Tasks.printTaskDetails(taskStatus, developerDetails, 
+                         UITheme.showSuccessMessage(Tasks.printTaskDetails(taskStatus, developerDetails, 
                                                     taskNumber, taskName, taskDescription,
                                                     taskID, taskDuration), 
-                                                    "Added Task Summary", JOptionPane.INFORMATION_MESSAGE); 
+                                                    "Added Task Summary"); 
                          
                          taskNames[i] = taskName;
                          taskDescriptions[i] = taskDescription;
@@ -394,19 +391,19 @@ public class LoginPage extends javax.swing.JFrame {
                        Tasks.printAllArrays();
                 break;
                 default:
-                        JOptionPane.showMessageDialog(null, "Invalid input entered", "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                        UITheme.showErrorMessage("Invalid input entered", "Something went wrong!");
                         break;
         }break;
         case 3: 
                Date currentDate = new Date();
                SimpleDateFormat hoursAndMinutes = new SimpleDateFormat("h:mm a");
-               JOptionPane.showMessageDialog(null, "Successfully logged out of account:\n" + getUsername() + " at " +
-                                              hoursAndMinutes.format(currentDate),"EasyKanban Session Ended", JOptionPane.INFORMATION_MESSAGE);
+               UITheme.showSuccessMessage("Successfully logged out of account:\n" + getUsername() + " at " +
+                                              hoursAndMinutes.format(currentDate),"EasyKanban Session Ended");
         break;
         default:
                 //displaying a suitable message if the user does not enter either 1, 2 or 3 during the first JOptionPane
-                JOptionPane.showMessageDialog(null, "Please enter one of the options\npreviously displayed to you", 
-                                              "Invalid option entered", JOptionPane.ERROR_MESSAGE);
+                UITheme.showErrorMessage("Please enter one of the options\npreviously displayed to you", 
+                                              "Invalid option entered");
         break;    
         }
     }
@@ -414,8 +411,8 @@ public class LoginPage extends javax.swing.JFrame {
     private static void displayTotalHours(){
     //displaying the total amount of hours after all the tasks have been added
       if(Option ==1 && taskStatus != null)
-        JOptionPane.showMessageDialog(null, "Total amount of hours for all the entered tasks: " + totalHours +
-                                      " hours", "Total amount of task hours", JOptionPane.INFORMATION_MESSAGE);           
+        UITheme.showSuccessMessage("Total amount of hours for all the entered tasks: " + totalHours +
+                                      " hours", "Total amount of task hours");           
     }  
     
     //validating whether or not the user's username and password exist in the text file when the login button is clicked
