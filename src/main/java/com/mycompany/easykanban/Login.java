@@ -32,7 +32,13 @@ public class Login {
      * @return true if username meets requirements, false otherwise
      */
     public boolean checkUserName(String userName){
-        return userName.contains("_") && userName.length() <= 5;
+        // More reasonable username validation: 3-20 characters, alphanumeric and underscore
+        if (userName == null || userName.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = userName.trim();
+        return trimmed.length() >= 3 && trimmed.length() <= 20 && 
+               trimmed.matches("^[a-zA-Z0-9_]+$");
     }
     
     /**
@@ -41,24 +47,27 @@ public class Login {
      * @return true if password meets complexity requirements, false otherwise
      */
     public boolean checkPasswordComplexity(String password){
-     int isUpperCaseCount = 0;
-     int isDigitCount = 0;
-     int SpecialCount = 0;
-        for(int i= 0; i<password.length(); i++){
-             char character = password.charAt(i);
-            if (Character.isUpperCase(character))
-                 isUpperCaseCount++;
-            else if (Character.isDigit(character))
-                     isDigitCount++;
-            else if (password.contains("!") || password.contains("@") || password.contains("#") || password.contains("$") ||
-                     password.contains("%")||  password.contains("&") || password.contains("*") || password.contains("?") ||
-                     password.contains("-") || password.contains("<")|| password.contains(">") || password.contains(".") ||
-                     password.contains(",") || password.contains("_") || password.contains(":") || password.contains("/") ||
-                     password.contains("^") || password.contains("|") || password.contains("+") || password.contains("(") ||
-                     password.contains(")"))
-                     SpecialCount++;
-      }
-        return isUpperCaseCount >= 1 && isDigitCount >=1 && SpecialCount >=1 && password.length() >= 8;
+        if (password == null || password.length() < 8) {
+            return false;
+        }
+        
+        int isUpperCaseCount = 0;
+        int isDigitCount = 0;
+        int specialCount = 0;
+        String specialChars = "!@#$%&*?-<>.,_:/^|+()";
+        
+        for(int i = 0; i < password.length(); i++){
+            char character = password.charAt(i);
+            if (Character.isUpperCase(character)) {
+                isUpperCaseCount++;
+            } else if (Character.isDigit(character)) {
+                isDigitCount++;
+            } else if (specialChars.indexOf(character) != -1) {
+                specialCount++;
+            }
+        }
+        
+        return isUpperCaseCount >= 1 && isDigitCount >= 1 && specialCount >= 1 && password.length() >= 8;
     }
     
     /**
@@ -83,25 +92,25 @@ public class Login {
         
         // Validate username format
         if (!checkUserName(username)) {
-            resultMessage = "Username is not correctly formatted, please ensure\n" +
-                           "that your username contains an underscore\n" +
-                           "and is no more than 5 characters in length.";
+            resultMessage = "Please check your username format.\n" +
+                           "Username must be 3-20 characters long and\n" +
+                           "can only contain letters, numbers, and underscores.";
             JOptionPane.showMessageDialog(null, resultMessage, "Invalid Username", JOptionPane.ERROR_MESSAGE);
             return resultMessage;
         }
         
         // Validate password complexity
         if (!checkPasswordComplexity(password)) {
-            resultMessage = "Password is not correctly formatted, please ensure\n" +
-                           "that your password contains at least 8 characters,\n" +
-                           "a capital letter, a number and a special character.";
+            resultMessage = "Please create a stronger password.\n" +
+                           "Password must contain at least 8 characters,\n" +
+                           "including one uppercase letter, one number, and one special character.";
             JOptionPane.showMessageDialog(null, resultMessage, "Invalid Password", JOptionPane.ERROR_MESSAGE);
             return resultMessage;
         }
         
         // Check if username already exists
         if (checkIfUsernameExists(username)) {
-            resultMessage = "Username already exists\nplease enter a different username.";
+            resultMessage = "This username is already taken.\nPlease choose a different username.";
             JOptionPane.showMessageDialog(null, resultMessage, "Username Taken", JOptionPane.ERROR_MESSAGE);
             return resultMessage;
         }
@@ -109,18 +118,18 @@ public class Login {
         // Validate names are not empty
         if (firstName == null || firstName.trim().isEmpty() || 
             lastName == null || lastName.trim().isEmpty()) {
-            resultMessage = "First name and last name are required.";
+            resultMessage = "Please enter both your first name and last name.";
             JOptionPane.showMessageDialog(null, resultMessage, "Missing Information", JOptionPane.ERROR_MESSAGE);
             return resultMessage;
         }
         
         // Attempt to register user
         if (dbManager.registerUser(username, password, firstName.trim(), lastName.trim())) {
-            resultMessage = "Registration successful! You can now log in.";
+            resultMessage = "Welcome to EasyKanban! Your account has been created successfully.\nYou can now log in with your credentials.";
             JOptionPane.showMessageDialog(null, resultMessage, "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
             LOGGER.info("User registered successfully: " + username);
         } else {
-            resultMessage = "Registration failed. Please try again.";
+            resultMessage = "We couldn't create your account at this time.\nPlease try again or contact support if the problem persists.";
             JOptionPane.showMessageDialog(null, resultMessage, "Registration Failed", JOptionPane.ERROR_MESSAGE);
             LOGGER.warning("Registration failed for username: " + username);
         }
@@ -169,7 +178,7 @@ public class Login {
         // Validate input
         if (username == null || username.trim().isEmpty() || 
             password == null || password.trim().isEmpty()) {
-            returnLoginMessage = "Username and password are required.";
+            returnLoginMessage = "Please enter both your username and password to continue.";
             JOptionPane.showMessageDialog(null, returnLoginMessage, "Missing Credentials", JOptionPane.ERROR_MESSAGE);
             return returnLoginMessage;
         }
@@ -184,7 +193,7 @@ public class Login {
             JOptionPane.showMessageDialog(null, returnLoginMessage, "Login Successful", JOptionPane.INFORMATION_MESSAGE);
             LOGGER.info("User logged in successfully: " + username);
         } else {
-            returnLoginMessage = "Username or password incorrect, please try again.";
+            returnLoginMessage = "The username or password you entered is incorrect.\nPlease check your credentials and try again.";
             JOptionPane.showMessageDialog(null, returnLoginMessage, "Login Failed", JOptionPane.ERROR_MESSAGE);
             LOGGER.warning("Login failed for username: " + username);
         }

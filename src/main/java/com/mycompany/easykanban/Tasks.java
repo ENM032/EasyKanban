@@ -159,8 +159,8 @@ public class Tasks {
             List<DatabaseManager.Task> completedTasks = dbManager.getTasksByStatus("Done", username);
             
             if (completedTasks.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "No completed tasks were found", 
-                    "No completed tasks", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "You haven't completed any tasks yet.\nStart working on your tasks to see them here!", 
+                    "No Completed Tasks", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
             
@@ -291,20 +291,20 @@ public class Tasks {
             boolean deleted = dbManager.deleteTask(taskName, username);
             
             if (deleted) {
-                JOptionPane.showMessageDialog(null, "Task successfully deleted", 
-                    "Deletion of task", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Task has been successfully removed from your project.", 
+                    "Task Deleted", JOptionPane.INFORMATION_MESSAGE);
                 return "Entry \"" + taskName + "\" successfully deleted";
             } else {
                 JOptionPane.showMessageDialog(null, 
-                    "No task has been deleted\ntask: \"" + taskName + "\" does not exist", 
-                    "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                    "Task '" + taskName + "' was not found in your project.\nPlease check the task name and try again.", 
+                    "Task Not Found", JOptionPane.ERROR_MESSAGE);
                 return "Nothing deleted";
             }
             
         } catch (Exception e) {
             LOGGER.severe("Error deleting task: " + e.getMessage());
-            JOptionPane.showMessageDialog(null, "Database error occurred", 
-                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Unable to connect to the database.\nPlease try again later.", 
+                "Connection Error", JOptionPane.ERROR_MESSAGE);
             return "Nothing deleted";
         }
     }

@@ -129,7 +129,7 @@ public class TaskClassTest {
     public void arrayDeletesCorrectly(){
      String searchTerm = "Create Reports";
      String actualMessage = Tasks.deleteArray(searchTerm);
-     String expectedMessage = "Entry " + "\""+ searchTerm + "\"" + " successfully deleted";
+     String expectedMessage = "Entry \"" + searchTerm + "\" successfully deleted";
      assertEquals(expectedMessage, actualMessage);
     }
     

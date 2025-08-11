@@ -12,7 +12,7 @@ import javax.swing.SwingConstants;
  * @author ebenm
  */
 public class RegistrationPage extends javax.swing.JFrame {
-    private final ImageIcon imgIcon1 = new ImageIcon("Registration.png");
+    private final ImageIcon imgIcon1 = new ImageIcon("docs/assets/Registration.png");
     /**
      * Creates new form RegistrationPage
      */

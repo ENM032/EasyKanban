@@ -46,9 +46,8 @@ public class DatabaseManager {
             
             // Set connection properties for better performance
             try (Statement stmt = connection.createStatement()) {
-                stmt.execute("SET CACHE_SIZE 65536");
-                stmt.execute("SET LOG 0");
-                stmt.execute("SET UNDO_LOG 0");
+                // Note: Some H2 settings are now configured via connection URL
+                // CACHE_SIZE is set in the connection URL
             }
             
             createTables();

@@ -18,7 +18,7 @@ public class LoginPage extends javax.swing.JFrame {
   private static int taskDuration;  
   private static int totalHours;
   
-  private final ImageIcon imgIcon = new ImageIcon("Login.png");
+  private final ImageIcon imgIcon = new ImageIcon("docs/assets/Login.png");
   
   private final static String comboBoxItems [] = {"To DO", "Doing", "Done"};
   private final static JComboBox comboBox = new JComboBox(comboBoxItems);    
@@ -334,8 +334,8 @@ public class LoginPage extends javax.swing.JFrame {
                     
                      
                     if(taskStatus == null){
-                       UITheme.showErrorMessage("Task status cannot be empty\nplease " +
-                                                    "select a task status", "Something went wrong"); 
+                       UITheme.showErrorMessage("Please select a task status to continue.\n" +
+                                                    "This field is required.", "Task Status Required"); 
                     }
                     else{
                       if(Tasks.messageForTaskDescription(taskDescription).equals("Task successfully captured")){
@@ -391,7 +391,7 @@ public class LoginPage extends javax.swing.JFrame {
                        Tasks.printAllArrays();
                 break;
                 default:
-                        UITheme.showErrorMessage("Invalid input entered", "Something went wrong!");
+                        UITheme.showErrorMessage("Please select a valid option from the menu.", "Invalid Selection");
                         break;
         }break;
         case 3: 
@@ -402,8 +402,8 @@ public class LoginPage extends javax.swing.JFrame {
         break;
         default:
                 //displaying a suitable message if the user does not enter either 1, 2 or 3 during the first JOptionPane
-                UITheme.showErrorMessage("Please enter one of the options\npreviously displayed to you", 
-                                              "Invalid option entered");
+                UITheme.showErrorMessage("Please choose one of the available options (1, 2, or 3).", 
+                                              "Invalid Option");
         break;    
         }
     }
@@ -422,7 +422,7 @@ public class LoginPage extends javax.swing.JFrame {
              String username = usernameText.getText();
              String password = String.valueOf(passwordText.getPassword());
              
-           if (!Login.loginStatus(username, password).equals("Username or password incorrect, please try again.")){
+           if (!Login.loginStatus(username, password).equals("The username or password you entered is incorrect.\nPlease check your credentials and try again.")){
                  this.dispose();
                   while (Option !=3){
                     try{   
@@ -430,8 +430,8 @@ public class LoginPage extends javax.swing.JFrame {
                     }
                     //Catching possible invalid inputs from the user and displaying a suitable error message     
                     catch(StringIndexOutOfBoundsException | NumberFormatException nfe){
-                          JOptionPane.showMessageDialog(null, "Invalid input entered, please try again.", 
-                                                        "Something went wrong", JOptionPane.ERROR_MESSAGE);
+                          JOptionPane.showMessageDialog(null, "Please enter a valid number. Only numeric values are accepted.", 
+                                                        "Invalid Input", JOptionPane.ERROR_MESSAGE);
                     }
                     displayTotalHours();
                 }

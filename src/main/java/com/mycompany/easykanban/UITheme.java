@@ -12,11 +12,11 @@ import javax.swing.border.Border;
  */
 public class UITheme {
     
-    // Primary Color Palette - Modern Blue Theme
-    public static final Color PRIMARY_BLUE = new Color(52, 152, 219);      // Bright blue
-    public static final Color PRIMARY_DARK = new Color(41, 128, 185);      // Darker blue
-    public static final Color SECONDARY_BLUE = new Color(174, 214, 241);   // Light blue
-    public static final Color ACCENT_BLUE = new Color(133, 193, 233);      // Medium blue
+    // Primary Color Palette - Modern Purple/Magenta Theme
+    public static final Color PRIMARY_BLUE = new Color(103, 76, 255);      // #674cff
+    public static final Color PRIMARY_DARK = new Color(220, 74, 252);      // #dc4afc
+    public static final Color SECONDARY_BLUE = new Color(248, 249, 250);   // #f8f9fa
+    public static final Color ACCENT_BLUE = new Color(253, 153, 255);      // #fd99ff
     
     // Neutral Colors
     public static final Color WHITE = new Color(255, 255, 255);
@@ -41,7 +41,7 @@ public class UITheme {
     
     // Component Dimensions
     public static final Dimension BUTTON_SIZE = new Dimension(140, 35);
-    public static final Dimension INPUT_SIZE = new Dimension(200, 30);
+    public static final Dimension INPUT_SIZE = new Dimension(200, 35);
     public static final Dimension PANEL_PADDING = new Dimension(20, 20);
     
     /**
