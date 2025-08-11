@@ -11,6 +11,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.mycompany.easykanban.EasyKanbanMain</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>

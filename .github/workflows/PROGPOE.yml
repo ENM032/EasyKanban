@@ -59,9 +59,33 @@ jobs:
           reporter: java-junit
           
       # Upload test artifacts
-       - name: Upload test artifacts
-         uses: actions/upload-artifact@v4
-         if: always()
-         with:
-           name: test-results
-           path: target/surefire-reports/
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/
+          
+      # Package application
+      - name: Package application
+        run: mvn package -DskipTests
+        
+      # Upload JAR artifact
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: easykanban-jar
+          path: target/*.jar
+          
+      # Run security scan
+      - name: Run OWASP Dependency Check
+        run: mvn org.owasp:dependency-check-maven:check
+        continue-on-error: true
+        
+      # Upload security report
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: target/dependency-check-report.html
