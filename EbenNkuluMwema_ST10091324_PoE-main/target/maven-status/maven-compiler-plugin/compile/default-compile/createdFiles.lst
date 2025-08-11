@@ -2,6 +2,7 @@ com\mycompany\easykanban\DatabaseManager$User.class
 com\mycompany\easykanban\RegistrationPage.class
 com\mycompany\easykanban\LoginPage$3.class
 com\mycompany\easykanban\RegistrationPage$3.class
+com\mycompany\easykanban\DatabaseManager$Task.class
 com\mycompany\easykanban\RegistrationPage$2.class
 com\mycompany\easykanban\LoginPage$1.class
 com\mycompany\easykanban\RegistrationPage$1.class

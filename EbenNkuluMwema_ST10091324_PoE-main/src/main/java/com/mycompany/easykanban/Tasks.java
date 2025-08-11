@@ -6,7 +6,9 @@ package com.mycompany.easykanban;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -18,6 +20,16 @@ public class Tasks {
  private static int totalTaskHours = 0;
  private static int taskNumber = 0;
  private static final AtomicInteger TASK_NUMBER = new AtomicInteger(0);
+ private static final Logger LOGGER = Logger.getLogger(Tasks.class.getName());
+ private static DatabaseManager dbManager;
+ 
+ static {
+     try {
+         dbManager = DatabaseManager.getInstance();
+     } catch (Exception e) {
+         LOGGER.severe("Failed to initialize DatabaseManager: " + e.getMessage());
+     }
+ }
  
    
     //generating a task number and incrementing it everytime the method is called
@@ -81,6 +93,288 @@ public class Tasks {
     public static int returnTotalTaskHours(int hours){
         totalTaskHours += hours;
         return totalTaskHours;
+    }
+    
+    // New database-integrated methods
+    public static boolean createTaskInDatabase(String taskName, String taskDescription, String developerName, 
+                                             int taskDuration, String taskStatus, String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return false;
+        }
+        
+        createTaskNumber();
+        String taskId = createTaskID(taskName, developerName);
+        
+        return dbManager.createTask(taskName, taskDescription, developerName, 
+                                   taskDuration, taskStatus, taskId, getTaskNumber(), username);
+    }
+    
+    public static int getTotalTaskHoursFromDatabase(String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return 0;
+        }
+        
+        return dbManager.getTotalTaskHours(username);
+    }
+    
+    public static String findHighestDurationFromDatabase(String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return "Database not available";
+        }
+        
+        try {
+            DatabaseManager.Task task = dbManager.getTaskWithHighestDuration(username);
+            if (task != null) {
+                String message = "Developer name: " + task.getDeveloperName() + 
+                               "\nTask name: " + task.getTaskName() + 
+                               "\nTask duration: " + task.getTaskDuration();
+                
+                JOptionPane.showMessageDialog(null, message, 
+                    "Task details for the highest duration", JOptionPane.INFORMATION_MESSAGE);
+                
+                return message;
+            } else {
+                JOptionPane.showMessageDialog(null, "No tasks found", 
+                    "No tasks available", JOptionPane.INFORMATION_MESSAGE);
+                return "No tasks found";
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error finding highest duration task: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Could not find the highest duration\nDatabase error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            return "Duration not found";
+        }
+    }
+    
+    public static void displayCompletedTasksFromDatabase(String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return;
+        }
+        
+        try {
+            List<DatabaseManager.Task> completedTasks = dbManager.getTasksByStatus("Done", username);
+            
+            if (completedTasks.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No completed tasks were found", 
+                    "No completed tasks", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            StringBuilder developers = new StringBuilder();
+            StringBuilder taskNames = new StringBuilder();
+            StringBuilder taskDurations = new StringBuilder();
+            
+            for (DatabaseManager.Task task : completedTasks) {
+                developers.append(task.getDeveloperName()).append(", ");
+                taskNames.append(task.getTaskName()).append(", ");
+                taskDurations.append(task.getTaskDuration()).append(", ");
+            }
+            
+            // Remove trailing comma and space
+            if (developers.length() > 2) {
+                developers.setLength(developers.length() - 2);
+                taskNames.setLength(taskNames.length() - 2);
+                taskDurations.setLength(taskDurations.length() - 2);
+            }
+            
+            JOptionPane.showMessageDialog(null, 
+                "Developer names: " + developers + 
+                "\nTask names: " + taskNames + 
+                "\nTask durations: " + taskDurations, 
+                "All completed tasks", JOptionPane.INFORMATION_MESSAGE);
+                
+        } catch (Exception e) {
+            LOGGER.severe("Error displaying completed tasks: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Database error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    public static String findTaskByNameFromDatabase(String taskName, String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return "Database not available";
+        }
+        
+        try {
+            List<DatabaseManager.Task> tasks = dbManager.searchTasksByName(taskName, username);
+            
+            if (tasks.isEmpty()) {
+                JOptionPane.showMessageDialog(null, 
+                    "Could not find task name : \"" + taskName + "\"\ncheck spelling of task or add task details", 
+                    "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                return "Nothing found";
+            }
+            
+            StringBuilder taskNames = new StringBuilder();
+            StringBuilder developerNames = new StringBuilder();
+            StringBuilder taskStatuses = new StringBuilder();
+            
+            for (DatabaseManager.Task task : tasks) {
+                taskNames.append(task.getTaskName()).append(", ");
+                developerNames.append(task.getDeveloperName()).append(", ");
+                taskStatuses.append(task.getTaskStatus()).append(", ");
+            }
+            
+            // Remove trailing comma and space
+            if (taskNames.length() > 2) {
+                taskNames.setLength(taskNames.length() - 2);
+                developerNames.setLength(developerNames.length() - 2);
+                taskStatuses.setLength(taskStatuses.length() - 2);
+            }
+            
+            JOptionPane.showMessageDialog(null, 
+                "Task name: " + taskNames + 
+                "\nDeveloper name: " + developerNames + 
+                "\nTask status: " + taskStatuses, 
+                "Task details found", JOptionPane.INFORMATION_MESSAGE);
+                
+            return developerNames.toString().trim() + ", " + taskNames.toString().trim();
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error finding task by name: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Database error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            return "Nothing found";
+        }
+    }
+    
+    public static String findTasksByDeveloperFromDatabase(String developerName, String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return "Database not available";
+        }
+        
+        try {
+            List<DatabaseManager.Task> tasks = dbManager.searchTasksByDeveloper(developerName, username);
+            
+            if (tasks.isEmpty()) {
+                JOptionPane.showMessageDialog(null, 
+                    "Could not find any tasks associated to: \"" + developerName + "\"", 
+                    "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                return "Nothing found";
+            }
+            
+            StringBuilder taskNames = new StringBuilder();
+            
+            for (DatabaseManager.Task task : tasks) {
+                taskNames.append(task.getTaskName()).append(", ");
+            }
+            
+            // Remove trailing comma and space
+            if (taskNames.length() > 2) {
+                taskNames.setLength(taskNames.length() - 2);
+            }
+            
+            JOptionPane.showMessageDialog(null, 
+                "Task name/s found: \n" + taskNames, 
+                "Developer task details found", JOptionPane.INFORMATION_MESSAGE);
+                
+            return taskNames.toString().trim();
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error finding tasks by developer: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Database error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            return "Nothing found";
+        }
+    }
+    
+    public static String deleteTaskFromDatabase(String taskName, String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return "Database not available";
+        }
+        
+        try {
+            boolean deleted = dbManager.deleteTask(taskName, username);
+            
+            if (deleted) {
+                JOptionPane.showMessageDialog(null, "Task successfully deleted", 
+                    "Deletion of task", JOptionPane.INFORMATION_MESSAGE);
+                return "Entry \"" + taskName + "\" successfully deleted";
+            } else {
+                JOptionPane.showMessageDialog(null, 
+                    "No task has been deleted\ntask: \"" + taskName + "\" does not exist", 
+                    "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+                return "Nothing deleted";
+            }
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error deleting task: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Database error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            return "Nothing deleted";
+        }
+    }
+    
+    public static String displayAllTasksFromDatabase(String username) {
+        if (dbManager == null) {
+            LOGGER.severe("DatabaseManager not initialized");
+            return "Database not available";
+        }
+        
+        try {
+            List<DatabaseManager.Task> tasks = dbManager.getAllTasks(username);
+            
+            if (tasks.isEmpty()) {
+                JOptionPane.showMessageDialog(null, 
+                    "No tasks details available to display, please add task details first", 
+                    "No tasks available", JOptionPane.INFORMATION_MESSAGE);
+                return "Not displayed";
+            }
+            
+            StringBuilder taskStatuses = new StringBuilder();
+            StringBuilder developers = new StringBuilder();
+            StringBuilder taskNumbers = new StringBuilder();
+            StringBuilder taskNames = new StringBuilder();
+            StringBuilder taskDescriptions = new StringBuilder();
+            StringBuilder taskIDs = new StringBuilder();
+            StringBuilder taskDurations = new StringBuilder();
+            
+            for (DatabaseManager.Task task : tasks) {
+                taskStatuses.append(task.getTaskStatus()).append(", ");
+                developers.append(task.getDeveloperName()).append(", ");
+                taskNumbers.append(task.getTaskNumber()).append(", ");
+                taskNames.append(task.getTaskName()).append(", ");
+                taskDescriptions.append(task.getTaskDescription()).append(", ");
+                taskIDs.append(task.getTaskId()).append(", ");
+                taskDurations.append(task.getTaskDuration()).append(", ");
+            }
+            
+            // Remove trailing comma and space
+            if (taskStatuses.length() > 2) {
+                taskStatuses.setLength(taskStatuses.length() - 2);
+                developers.setLength(developers.length() - 2);
+                taskNumbers.setLength(taskNumbers.length() - 2);
+                taskNames.setLength(taskNames.length() - 2);
+                taskDescriptions.setLength(taskDescriptions.length() - 2);
+                taskIDs.setLength(taskIDs.length() - 2);
+                taskDurations.setLength(taskDurations.length() - 2);
+            }
+            
+            JOptionPane.showMessageDialog(null, 
+                "All task Statuses: " + taskStatuses + 
+                "\nAll developer names: " + developers +
+                "\nAll task numbers: " + taskNumbers + 
+                "\nAll task names: " + taskNames + 
+                "\nAll task descriptions: " + taskDescriptions +
+                "\nAll task IDs: " + taskIDs + 
+                "\nAll task durations: " + taskDurations, 
+                "Final task summary", JOptionPane.INFORMATION_MESSAGE);
+                
+            return "Successfully displayed";
+            
+        } catch (Exception e) {
+            LOGGER.severe("Error displaying all tasks: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Database error occurred", 
+                "Something went wrong!", JOptionPane.ERROR_MESSAGE);
+            return "Not displayed";
+        }
     }
     
     //finds the task with the highest duration in the task durations array

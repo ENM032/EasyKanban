@@ -4,6 +4,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Database manager for handling user authentication and data persistence
@@ -62,14 +64,15 @@ public class DatabaseManager {
         String createTasksTable = """
             CREATE TABLE IF NOT EXISTS tasks (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
                 task_name VARCHAR(255) NOT NULL,
                 task_description TEXT,
-                developer_details VARCHAR(255),
+                developer_name VARCHAR(255),
                 task_duration INT,
                 task_status VARCHAR(50) DEFAULT 'To Do',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                task_id VARCHAR(50),
+                task_number INT,
+                username VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """;
         
@@ -186,6 +189,224 @@ public class DatabaseManager {
         }
     }
     
+    // Task management methods
+    public boolean createTask(String taskName, String taskDescription, String developerName, 
+                             int taskDuration, String taskStatus, String taskId, int taskNumber, String username) {
+        String sql = "INSERT INTO tasks (task_name, task_description, developer_name, task_duration, " +
+                    "task_status, task_id, task_number, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, taskName);
+            pstmt.setString(2, taskDescription);
+            pstmt.setString(3, developerName);
+            pstmt.setInt(4, taskDuration);
+            pstmt.setString(5, taskStatus);
+            pstmt.setString(6, taskId);
+            pstmt.setInt(7, taskNumber);
+            pstmt.setString(8, username);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error creating task: " + e.getMessage(), e);
+            return false;
+        }
+    }
+    
+    public List<Task> getAllTasks(String username) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE username = ? ORDER BY task_number";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Task task = new Task(
+                    rs.getInt("id"),
+                    rs.getString("task_name"),
+                    rs.getString("task_description"),
+                    rs.getString("developer_name"),
+                    rs.getInt("task_duration"),
+                    rs.getString("task_status"),
+                    rs.getString("task_id"),
+                    rs.getInt("task_number"),
+                    rs.getString("username")
+                );
+                tasks.add(task);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving tasks: " + e.getMessage(), e);
+        }
+        
+        return tasks;
+    }
+    
+    public boolean updateTaskStatus(String taskId, String newStatus, String username) {
+        String sql = "UPDATE tasks SET task_status = ? WHERE task_id = ? AND username = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, newStatus);
+            pstmt.setString(2, taskId);
+            pstmt.setString(3, username);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error updating task status: " + e.getMessage(), e);
+            return false;
+        }
+    }
+    
+    public boolean deleteTask(String taskName, String username) {
+        String sql = "DELETE FROM tasks WHERE task_name = ? AND username = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, taskName);
+            pstmt.setString(2, username);
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error deleting task: " + e.getMessage(), e);
+            return false;
+        }
+    }
+    
+    public List<Task> getTasksByStatus(String status, String username) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE task_status = ? AND username = ? ORDER BY task_number";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, status);
+            pstmt.setString(2, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Task task = new Task(
+                    rs.getInt("id"),
+                    rs.getString("task_name"),
+                    rs.getString("task_description"),
+                    rs.getString("developer_name"),
+                    rs.getInt("task_duration"),
+                    rs.getString("task_status"),
+                    rs.getString("task_id"),
+                    rs.getInt("task_number"),
+                    rs.getString("username")
+                );
+                tasks.add(task);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving tasks by status: " + e.getMessage(), e);
+        }
+        
+        return tasks;
+    }
+    
+    public Task getTaskWithHighestDuration(String username) {
+        String sql = "SELECT * FROM tasks WHERE username = ? ORDER BY task_duration DESC LIMIT 1";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return new Task(
+                    rs.getInt("id"),
+                    rs.getString("task_name"),
+                    rs.getString("task_description"),
+                    rs.getString("developer_name"),
+                    rs.getInt("task_duration"),
+                    rs.getString("task_status"),
+                    rs.getString("task_id"),
+                    rs.getInt("task_number"),
+                    rs.getString("username")
+                );
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding task with highest duration: " + e.getMessage(), e);
+        }
+        
+        return null;
+    }
+    
+    public List<Task> searchTasksByName(String taskName, String username) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE task_name = ? AND username = ? ORDER BY task_number";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, taskName);
+            pstmt.setString(2, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Task task = new Task(
+                    rs.getInt("id"),
+                    rs.getString("task_name"),
+                    rs.getString("task_description"),
+                    rs.getString("developer_name"),
+                    rs.getInt("task_duration"),
+                    rs.getString("task_status"),
+                    rs.getString("task_id"),
+                    rs.getInt("task_number"),
+                    rs.getString("username")
+                );
+                tasks.add(task);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error searching tasks by name: " + e.getMessage(), e);
+        }
+        
+        return tasks;
+    }
+    
+    public List<Task> searchTasksByDeveloper(String developerName, String username) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE developer_name = ? AND username = ? ORDER BY task_number";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, developerName);
+            pstmt.setString(2, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Task task = new Task(
+                    rs.getInt("id"),
+                    rs.getString("task_name"),
+                    rs.getString("task_description"),
+                    rs.getString("developer_name"),
+                    rs.getInt("task_duration"),
+                    rs.getString("task_status"),
+                    rs.getString("task_id"),
+                    rs.getInt("task_number"),
+                    rs.getString("username")
+                );
+                tasks.add(task);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error searching tasks by developer: " + e.getMessage(), e);
+        }
+        
+        return tasks;
+    }
+    
+    public int getTotalTaskHours(String username) {
+        String sql = "SELECT SUM(task_duration) as total_hours FROM tasks WHERE username = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("total_hours");
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error calculating total task hours: " + e.getMessage(), e);
+        }
+        
+        return 0;
+    }
+    
     /**
      * User data class
      */
@@ -206,5 +427,49 @@ public class DatabaseManager {
         public String getUsername() { return username; }
         public String getFirstName() { return firstName; }
         public String getLastName() { return lastName; }
+    }
+    
+    /**
+     * Task data class
+     */
+    public static class Task {
+        private int id;
+        private String taskName;
+        private String taskDescription;
+        private String developerName;
+        private int taskDuration;
+        private String taskStatus;
+        private String taskId;
+        private int taskNumber;
+        private String username;
+        
+        public Task(int id, String taskName, String taskDescription, String developerName,
+                   int taskDuration, String taskStatus, String taskId, int taskNumber, String username) {
+            this.id = id;
+            this.taskName = taskName;
+            this.taskDescription = taskDescription;
+            this.developerName = developerName;
+            this.taskDuration = taskDuration;
+            this.taskStatus = taskStatus;
+            this.taskId = taskId;
+            this.taskNumber = taskNumber;
+            this.username = username;
+        }
+        
+        // Getters
+        public int getId() { return id; }
+        public String getTaskName() { return taskName; }
+        public String getTaskDescription() { return taskDescription; }
+        public String getDeveloperName() { return developerName; }
+        public int getTaskDuration() { return taskDuration; }
+        public String getTaskStatus() { return taskStatus; }
+        public String getTaskId() { return taskId; }
+        public int getTaskNumber() { return taskNumber; }
+        public String getUsername() { return username; }
+        
+        // Setters
+        public void setTaskStatus(String taskStatus) { this.taskStatus = taskStatus; }
+        public void setTaskDescription(String taskDescription) { this.taskDescription = taskDescription; }
+        public void setTaskDuration(int taskDuration) { this.taskDuration = taskDuration; }
     }
 }
