@@ -214,17 +214,16 @@ public class Tasks {
             StringBuilder developerNames = new StringBuilder();
             StringBuilder taskStatuses = new StringBuilder();
             
-            for (DatabaseManager.Task task : tasks) {
-                taskNames.append(task.getTaskName()).append(", ");
-                developerNames.append(task.getDeveloperName()).append(", ");
-                taskStatuses.append(task.getTaskStatus()).append(", ");
-            }
-            
-            // Remove trailing comma and space
-            if (taskNames.length() > 2) {
-                taskNames.setLength(taskNames.length() - 2);
-                developerNames.setLength(developerNames.length() - 2);
-                taskStatuses.setLength(taskStatuses.length() - 2);
+            for (int i = 0; i < tasks.size(); i++) {
+                DatabaseManager.Task task = tasks.get(i);
+                if (i > 0) {
+                    taskNames.append(", ");
+                    developerNames.append(", ");
+                    taskStatuses.append(", ");
+                }
+                taskNames.append(task.getTaskName());
+                developerNames.append(task.getDeveloperName());
+                taskStatuses.append(task.getTaskStatus());
             }
             
             JOptionPane.showMessageDialog(null, 
@@ -261,13 +260,11 @@ public class Tasks {
             
             StringBuilder taskNames = new StringBuilder();
             
-            for (DatabaseManager.Task task : tasks) {
-                taskNames.append(task.getTaskName()).append(", ");
-            }
-            
-            // Remove trailing comma and space
-            if (taskNames.length() > 2) {
-                taskNames.setLength(taskNames.length() - 2);
+            for (int i = 0; i < tasks.size(); i++) {
+                if (i > 0) {
+                    taskNames.append(", ");
+                }
+                taskNames.append(tasks.get(i).getTaskName());
             }
             
             JOptionPane.showMessageDialog(null, 

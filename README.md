@@ -4,23 +4,13 @@ A Java-based Kanban task management application with secure user authentication 
 
 ## Features
 
-### Security
-- **Password Hashing**: Secure password storage using BCrypt hashing algorithm
-- **User Authentication**: Database-backed login system with encrypted credentials
-- **Session Management**: Secure user session handling
-
-### Database Integration
-- **H2 Database**: Embedded database for data persistence
-- **User Management**: Complete CRUD operations for user accounts
-- **Task Management**: Full task lifecycle management with database storage
-- **Data Analytics**: Task duration analysis and reporting
-
-### Task Management
-- Create, read, update, and delete tasks
-- Search tasks by name, developer, or status
-- Track task duration and calculate total hours
-- Filter tasks by completion status
-- User-specific task isolation
+- **Task Management**: Create, read, update, and delete tasks with full lifecycle management
+- **Search & Filter**: Find tasks by name, developer, or status with advanced filtering
+- **Time Tracking**: Track task duration and calculate total project hours
+- **Security**: BCrypt password hashing and secure user authentication
+- **Database**: H2 embedded database with automatic data persistence
+- **User Isolation**: Each user has their own secure task workspace
+- **Analytics**: Task duration analysis and completion reporting
 
 ## Prerequisites
 
@@ -146,6 +136,15 @@ Test reports will be generated in `target/site/surefire-report.html`
 1. Install the "Extension Pack for Java"
 2. Open the project folder in VS Code
 3. VS Code will automatically detect the Maven project
+
+**For NetBeans:**
+1. Open NetBeans IDE
+2. File → Open Project
+3. Navigate to the project folder and select it
+4. NetBeans will automatically recognize the Maven project structure
+5. Wait for dependency resolution to complete
+
+**Note about NetBeans**: This project was originally developed in NetBeans IDE but has been migrated to a Maven-based structure for better cross-platform compatibility. All NetBeans-specific configuration files have been removed to ensure the project works seamlessly across different IDEs and build environments.
 
 ### Database Configuration
 

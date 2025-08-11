@@ -12,10 +12,12 @@ import java.util.ArrayList;
  * Uses H2 embedded database with BCrypt password hashing
  */
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:h2:./data/easykanban;AUTO_SERVER=TRUE";
+    private static final String DB_URL = "jdbc:h2:./data/easykanban;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;CACHE_SIZE=65536";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "";
     private static final Logger LOGGER = Logger.getLogger(DatabaseManager.class.getName());
+    private static final int MAX_CONNECTIONS = 10;
+    private static final int CONNECTION_TIMEOUT = 30000; // 30 seconds
     
     private static DatabaseManager instance;
     private Connection connection;
@@ -38,8 +40,19 @@ public class DatabaseManager {
         try {
             Class.forName("org.h2.Driver");
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            
+            // Performance optimizations
+            connection.setAutoCommit(true);
+            
+            // Set connection properties for better performance
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("SET CACHE_SIZE 65536");
+                stmt.execute("SET LOG 0");
+                stmt.execute("SET UNDO_LOG 0");
+            }
+            
             createTables();
-            LOGGER.info("Database initialized successfully");
+            LOGGER.info("Database initialized successfully with performance optimizations");
         } catch (ClassNotFoundException | SQLException e) {
             LOGGER.log(Level.SEVERE, "Failed to initialize database", e);
             throw new RuntimeException("Database initialization failed", e);
@@ -47,7 +60,7 @@ public class DatabaseManager {
     }
     
     /**
-     * Create necessary tables for the application
+     * Create necessary tables for the application with performance optimizations
      */
     private void createTables() throws SQLException {
         String createUsersTable = """
@@ -76,10 +89,26 @@ public class DatabaseManager {
             )
             """;
         
+        // Performance optimization indexes
+        String[] indexes = {
+            "CREATE INDEX IF NOT EXISTS idx_tasks_username ON tasks(username)",
+            "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(task_status)",
+            "CREATE INDEX IF NOT EXISTS idx_tasks_developer ON tasks(developer_name)",
+            "CREATE INDEX IF NOT EXISTS idx_tasks_name ON tasks(task_name)",
+            "CREATE INDEX IF NOT EXISTS idx_tasks_duration ON tasks(task_duration DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)"
+        };
+        
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(createUsersTable);
             stmt.execute(createTasksTable);
-            LOGGER.info("Database tables created successfully");
+            
+            // Create performance indexes
+            for (String index : indexes) {
+                stmt.execute(index);
+            }
+            
+            LOGGER.info("Database tables and indexes created successfully");
         }
     }
     
@@ -408,20 +437,59 @@ public class DatabaseManager {
     }
     
     public int getTotalTaskHours(String username) {
-        String sql = "SELECT SUM(task_duration) as total_hours FROM tasks WHERE username = ?";
+        String sql = "SELECT COALESCE(SUM(task_duration), 0) as total_hours FROM tasks WHERE username = ?";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt("total_hours");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total_hours");
+                }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error calculating total task hours: " + e.getMessage(), e);
         }
         
         return 0;
+    }
+    
+    /**
+     * Batch insert multiple tasks for better performance
+     */
+    public boolean createTasksBatch(List<Task> tasks) {
+        String sql = "INSERT INTO tasks (task_name, task_description, developer_name, task_duration, " +
+                    "task_status, task_id, task_number, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            connection.setAutoCommit(false);
+            
+            for (Task task : tasks) {
+                pstmt.setString(1, task.getTaskName());
+                pstmt.setString(2, task.getTaskDescription());
+                pstmt.setString(3, task.getDeveloperName());
+                pstmt.setInt(4, task.getTaskDuration());
+                pstmt.setString(5, task.getTaskStatus());
+                pstmt.setString(6, task.getTaskId());
+                pstmt.setInt(7, task.getTaskNumber());
+                pstmt.setString(8, task.getUsername());
+                pstmt.addBatch();
+            }
+            
+            int[] results = pstmt.executeBatch();
+            connection.commit();
+            connection.setAutoCommit(true);
+            
+            return results.length == tasks.size();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+                connection.setAutoCommit(true);
+            } catch (SQLException rollbackEx) {
+                LOGGER.log(Level.SEVERE, "Error during rollback: " + rollbackEx.getMessage(), rollbackEx);
+            }
+            LOGGER.log(Level.SEVERE, "Error creating tasks batch: " + e.getMessage(), e);
+            return false;
+        }
     }
     
     /**

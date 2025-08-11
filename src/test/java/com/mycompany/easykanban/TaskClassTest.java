@@ -38,6 +38,7 @@ public class TaskClassTest {
     //testing if the task duration hours add up correctly 
     @Test
     public void testTotalTaskHours(){
+     Tasks.setTotalHours(0); // Reset total hours before test
      int totalHours = 0;
      int [] hours = {8, 10};
      
