@@ -235,6 +235,23 @@ public class Login {
     }
     
     /**
+     * Authenticate user and return boolean result (for testing)
+     * @param username the username
+     * @param password the password
+     * @return true if authentication successful, false otherwise
+     */
+    public boolean authenticateUser(String username, String password) {
+        DatabaseManager.User user = dbManager.authenticateUser(username, password);
+        if (user != null) {
+            currentUser = user;
+            LOGGER.info("User authenticated successfully: " + username);
+            return true;
+        }
+        LOGGER.warning("Authentication failed for username: " + username);
+        return false;
+    }
+    
+    /**
      * Legacy method for backward compatibility
      * @deprecated Use getCurrentUser().getFirstName() instead
      */

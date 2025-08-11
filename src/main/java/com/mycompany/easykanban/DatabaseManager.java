@@ -169,6 +169,23 @@ public class DatabaseManager {
     }
     
     /**
+     * Delete a user (for testing purposes)
+     */
+    public boolean deleteUser(String username) {
+        String sql = "DELETE FROM users WHERE username = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            int rowsAffected = pstmt.executeUpdate();
+            LOGGER.info("User deleted: " + username);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Failed to delete user: " + username, e);
+            return false;
+        }
+    }
+    
+    /**
      * Get database connection for other operations
      */
     public Connection getConnection() {
