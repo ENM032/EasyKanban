@@ -267,14 +267,15 @@ public class RegistrationPage extends javax.swing.JFrame {
     private void registerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerButtonActionPerformed
         // TODO add your handling code here:
         if(evt.getSource() == registerButton){
-        Login getMethodsObj = new Login(); 
-            if(getMethodsObj.registerUser(getUserName(), getPassword()).equals("Password successfully captured")){
-                     Login.writingToTextFile(getUserName(), getPassword(), getFirstname(), getLastname());
-                         this.dispose();
-                         java.awt.EventQueue.invokeLater(() -> {
-                             new LoginPage().setVisible(true);
-                     });
+            Login getMethodsObj = new Login(); 
+            String result = getMethodsObj.registerUser(getUserName(), getPassword(), getFirstname(), getLastname());
+            if(result.contains("Registration successful")){
+                this.dispose();
+                java.awt.EventQueue.invokeLater(() -> {
+                    new LoginPage().setVisible(true);
+                });
             }
+            // Error messages are already displayed by the registerUser method
         }
     }//GEN-LAST:event_registerButtonActionPerformed
 

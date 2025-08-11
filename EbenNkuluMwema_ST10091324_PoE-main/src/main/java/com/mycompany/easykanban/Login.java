@@ -3,33 +3,44 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.easykanban;
-import java.io.BufferedWriter;
+import javax.swing.JOptionPane;
+import java.util.logging.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import javax.swing.JOptionPane;
+import java.util.NoSuchElementException;
 
 /**
  *
  * @author ebenm
  */
 public class Login {
-    //Instantiating these variables here so they can be used inside various methods
-    private static String name;
-    private static String surname;
+    private static final Logger LOGGER = Logger.getLogger(Login.class.getName());
+    private static DatabaseManager.User currentUser;
+    private final DatabaseManager dbManager;
     
-    //validating whether or not the username recieved from the JTextField meets all the requirements
-    //if it does, a true value is returned and if it doesn't, a false value is returned 
-    Boolean checkUserName(String userName){
-      return userName.contains("_") && userName.length() <= 5;
+    public Login() {
+        this.dbManager = DatabaseManager.getInstance();
     }
     
-    //validating whether or not the password received from the JPasswordField meets the minimum password complexity requirements
-    //if it does, a true value is returned and if it doesn't, a false value is returned
-    Boolean checkPasswordComplexity(String password){
+    /**
+     * Validates username format requirements
+     * @param userName the username to validate
+     * @return true if username meets requirements, false otherwise
+     */
+    public boolean checkUserName(String userName){
+        return userName.contains("_") && userName.length() <= 5;
+    }
+    
+    /**
+     * Validates password complexity requirements
+     * @param password the password to validate
+     * @return true if password meets complexity requirements, false otherwise
+     */
+    public boolean checkPasswordComplexity(String password){
      int isUpperCaseCount = 0;
      int isDigitCount = 0;
      int SpecialCount = 0;
@@ -50,165 +61,214 @@ public class Login {
         return isUpperCaseCount >= 1 && isDigitCount >=1 && SpecialCount >=1 && password.length() >= 8;
     }
     
-    //looping through the text file to test whether or not a username or password already exists
-    //if it does, the user will be asked to enter different credentials and if it doesn't,
-    //the user will be allowed register their new account
-    public static String checkIfCredentialsExistsInTextFile(String username, String password){
-     boolean credentialsFound = false;
-     String ifFoundMessage = "";
-     String locatedUserName;
-     String locatedPassword;
-     try{
-         Scanner textFileScanner = new Scanner(new File("Credentials.txt"));
-         textFileScanner.useDelimiter("[,\n]");
-    //reading records inside the credentials text file until it matches the username and password from the JTextField and JPasswordField
-        while(textFileScanner.hasNext() && !credentialsFound){
-              locatedUserName = textFileScanner.next();
-              locatedPassword = textFileScanner.next();
-              name = textFileScanner.next();
-              surname = textFileScanner.next();
-
-        if(locatedUserName.trim().equals(username.trim()) && locatedPassword.trim().equals(password.trim())){
-            credentialsFound = true;
-             ifFoundMessage = "Both credentials found";
-        }
-        else if (locatedUserName.trim().equals(username.trim())){
-            credentialsFound = true;
-             ifFoundMessage = "Username found";
-         }
-        else if(locatedPassword.trim().equals(password.trim())){
-            credentialsFound = true;
-             ifFoundMessage = "Password found";
-        }
-    }
-     textFileScanner.close();
-    }
-     catch(FileNotFoundException fnfe){
-           System.out.println("Something went wrong! Could not locate text file");
-    }
-     catch(NoSuchElementException nsee){
-         ifFoundMessage = "Nothing found";
-     }
-     return ifFoundMessage;
+    /**
+     * Check if username already exists in database
+     * @param username the username to check
+     * @return true if username exists, false otherwise
+     */
+    public boolean checkIfUsernameExists(String username) {
+        return dbManager.usernameExists(username);
     }
     
-    /*displaying a suitable message if the credentials are found inside the text file
-    if the credentials aren't found, the credntials will be checked for correct formatting and complexity requirements
-    if they do meet all the requirements a suitable message is displayed, and they will be able to create a new account
-    if they do not, a suitable message is displayed and the user won't be able to create a new account
-    */
-     String registerUser(String username, String password){
+    /**
+     * Register a new user with validation
+     * @param username the username
+     * @param password the password
+     * @param firstName the first name
+     * @param lastName the last name
+     * @return result message indicating success or failure
+     */
+    public String registerUser(String username, String password, String firstName, String lastName) {
         String resultMessage = "";
         
-        if (checkIfCredentialsExistsInTextFile(username, password).equals("Username found")){
-             resultMessage = "Username already exist\nplease enter a different username.";
-             JOptionPane.showMessageDialog(null, resultMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+        // Validate username format
+        if (!checkUserName(username)) {
+            resultMessage = "Username is not correctly formatted, please ensure\n" +
+                           "that your username contains an underscore\n" +
+                           "and is no more than 5 characters in length.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Invalid Username", JOptionPane.ERROR_MESSAGE);
+            return resultMessage;
         }
-        else if (checkIfCredentialsExistsInTextFile(username, password).equals("Password found")){
-                 resultMessage = "Password already exist\nplease enter a different password.";
-                 JOptionPane.showMessageDialog(null, resultMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+        
+        // Validate password complexity
+        if (!checkPasswordComplexity(password)) {
+            resultMessage = "Password is not correctly formatted, please ensure\n" +
+                           "that your password contains at least 8 characters,\n" +
+                           "a capital letter, a number and a special character.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Invalid Password", JOptionPane.ERROR_MESSAGE);
+            return resultMessage;
         }
-        else if (checkIfCredentialsExistsInTextFile(username, password).equals("Both credentials found")){
-                 resultMessage = "Username and passowrd already exist\nplease enter a different username and password.";
-                 JOptionPane.showMessageDialog(null, resultMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
-        }        
-        else if (!checkUserName(username)){
-                 resultMessage = "Username is not correctly formatted, please ensure\nthat your username contains an underscore" +
-                                 "\nand is no more than 5 characters in length.";
-                 JOptionPane.showMessageDialog(null, resultMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+        
+        // Check if username already exists
+        if (checkIfUsernameExists(username)) {
+            resultMessage = "Username already exists\nplease enter a different username.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Username Taken", JOptionPane.ERROR_MESSAGE);
+            return resultMessage;
         }
-        else if (checkPasswordComplexity(password)){
-                 resultMessage = "Password successfully captured";
-                 JOptionPane.showMessageDialog(null, resultMessage, "Registration successful", JOptionPane.INFORMATION_MESSAGE);
+        
+        // Validate names are not empty
+        if (firstName == null || firstName.trim().isEmpty() || 
+            lastName == null || lastName.trim().isEmpty()) {
+            resultMessage = "First name and last name are required.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Missing Information", JOptionPane.ERROR_MESSAGE);
+            return resultMessage;
         }
-        else if (!checkPasswordComplexity(password)){
-                 resultMessage = "Password is not correctly formatted, please ensure\nthat your password contains at least 8 characters," +
-                                 "\na capital letter, a number and a special character.";
-                 JOptionPane.showMessageDialog(null, resultMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+        
+        // Attempt to register user
+        if (dbManager.registerUser(username, password, firstName.trim(), lastName.trim())) {
+            resultMessage = "Registration successful! You can now log in.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.info("User registered successfully: " + username);
+        } else {
+            resultMessage = "Registration failed. Please try again.";
+            JOptionPane.showMessageDialog(null, resultMessage, "Registration Failed", JOptionPane.ERROR_MESSAGE);
+            LOGGER.warning("Registration failed for username: " + username);
         }
+        
         return resultMessage;
     } 
      
-    //writing the entered credentials into a textfile, if the textfile doesn't exist, a new one will be created and written to
-    //if the text file does exist, the credentials will be written into the textfile
+    /**
+     * Legacy method for backward compatibility - now uses database
+     * @deprecated Use registerUser instead
+     */
+    @Deprecated
     public static String writingToTextFile(String username, String password, String firstname, String lastname){
-         File myFile = new File("Credentials.txt");
-         try{
-             FileWriter textFileWriter = new FileWriter(myFile, true);
-             BufferedWriter userCredentialsWriter = new BufferedWriter(textFileWriter);
-             userCredentialsWriter.write(username + ", "+ password + ", "+ firstname + ", "+ lastname +"\n");
-             userCredentialsWriter.close();
-             return "File successfully written to";
-        }
-        catch(IOException ioe){
-         return "Something went wrong! Text File could not be created or written to.";
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+        if (dbManager.registerUser(username, password, firstname, lastname)) {
+            return "User successfully registered in database";
+        } else {
+            return "Registration failed";
         }
     }
     
-    //locating the entered credentials from the SignInForm page, if the credentials are found a true value is returned
-    //if the credentials are not found a false value is returned
+    /**
+     * Legacy method for backward compatibility - now uses database
+     * @deprecated Use loginUser instead
+     */
+    @Deprecated
     public static Boolean findCredentialsInTextFile(String username, String password){
-     boolean credentialsAreFound = false;
-     String tempUserName;
-     String tempPassword;
-     String tempName;
-     String tempSurname;
-     try{
-         Scanner textFileScanner = new Scanner(new File("Credentials.txt"));
-         textFileScanner.useDelimiter("[,\n]");
-    //Reading records inside the credentials text file until it matches the username and password from the JTextField and JPasswordField
-             while(textFileScanner.hasNext() && !credentialsAreFound){
-                 tempUserName = textFileScanner.next();
-                 tempPassword = textFileScanner.next();
-                 tempName = textFileScanner.next();
-                 tempSurname = textFileScanner.next();
-
-                if (tempUserName.trim().equals(username.trim()) && tempPassword.trim().equals(password.trim())){
-                     credentialsAreFound = true;
-                     name = tempName;
-                     surname = tempSurname;
-                }
-    }
-     textFileScanner.close();
-    }
-     catch(FileNotFoundException fnfe){
-           System.out.println("Something went wrong! Could not located text file");
-    }
-     return credentialsAreFound;
+        DatabaseManager dbManager = DatabaseManager.getInstance();
+        DatabaseManager.User user = dbManager.authenticateUser(username, password);
+        if (user != null) {
+            currentUser = user;
+            return true;
+        }
+        return false;
     }
     
-    //checking if the credentials entered from the SignInForm exist, if they do exist, a suitable message will be displayed and the user will be logged in
-    //if they don't exist, a suitable message will be displayed and the user will not be logged in
-    public static String loginStatus(String username, String password){
-     String returnLoginMessage = "";
-        if(findCredentialsInTextFile(username, password)){
-             returnLoginMessage ="Welcome" + name + "," + surname + " it is great to see you again.";
-             JOptionPane.showMessageDialog(null, returnLoginMessage, "Login successful", JOptionPane.INFORMATION_MESSAGE);
+    /**
+     * Authenticate user login with database
+     * @param username the username
+     * @param password the password
+     * @return login status message
+     */
+    public String loginUser(String username, String password) {
+        String returnLoginMessage = "";
+        
+        // Validate input
+        if (username == null || username.trim().isEmpty() || 
+            password == null || password.trim().isEmpty()) {
+            returnLoginMessage = "Username and password are required.";
+            JOptionPane.showMessageDialog(null, returnLoginMessage, "Missing Credentials", JOptionPane.ERROR_MESSAGE);
+            return returnLoginMessage;
         }
-        else if(!findCredentialsInTextFile(username, password)){
-                 returnLoginMessage = "Username or password incorrect, please try again.";
-                 JOptionPane.showMessageDialog(null, returnLoginMessage, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+        
+        // Attempt authentication
+        DatabaseManager.User user = dbManager.authenticateUser(username.trim(), password);
+        
+        if (user != null) {
+            currentUser = user;
+            returnLoginMessage = "Welcome " + user.getFirstName() + " " + user.getLastName() + 
+                               ", it is great to see you again.";
+            JOptionPane.showMessageDialog(null, returnLoginMessage, "Login Successful", JOptionPane.INFORMATION_MESSAGE);
+            LOGGER.info("User logged in successfully: " + username);
+        } else {
+            returnLoginMessage = "Username or password incorrect, please try again.";
+            JOptionPane.showMessageDialog(null, returnLoginMessage, "Login Failed", JOptionPane.ERROR_MESSAGE);
+            LOGGER.warning("Login failed for username: " + username);
         }
+        
         return returnLoginMessage;
-  }
-    
-    //creating a method to easily set the user's name when writing and running the JUnit test
-    public static void setName(String settedName){
-        name = settedName;
     }
     
-    //creating a method to easily set the user's surname when writing and running the JUnit test
-    public static void setSurname(String settedSurname){
-        surname = settedSurname;
+    /**
+     * Legacy method for backward compatibility
+     * @deprecated Use loginUser instead
+     */
+    @Deprecated
+    public static String loginStatus(String username, String password){
+        Login login = new Login();
+        return login.loginUser(username, password);
     }
     
-    //creating a method to access the user's name from other classes or inside other methods
+    /**
+     * Get the currently logged-in user
+     * @return the current user or null if no user is logged in
+     */
+    public static DatabaseManager.User getCurrentUser() {
+        return currentUser;
+    }
+    
+    /**
+     * Set the current user (for testing purposes)
+     * @param user the user to set as current
+     */
+    public static void setCurrentUser(DatabaseManager.User user) {
+        currentUser = user;
+    }
+    
+    /**
+     * Check if a user is currently logged in
+     * @return true if a user is logged in, false otherwise
+     */
+    public static boolean isUserLoggedIn() {
+        return currentUser != null;
+    }
+    
+    /**
+     * Log out the current user
+     */
+    public static void logout() {
+        currentUser = null;
+        LOGGER.info("User logged out");
+    }
+    
+    /**
+     * Legacy method for backward compatibility
+     * @deprecated Use getCurrentUser().getFirstName() instead
+     */
+    @Deprecated
     public static String getName(){
-        return name;
+        return currentUser != null ? currentUser.getFirstName() : null;
     }
     
-    //creating a method to access the user's surname from other classes or inside other methods
+    /**
+     * Legacy method for backward compatibility
+     * @deprecated Use getCurrentUser().getLastName() instead
+     */
+    @Deprecated
     public static String getSurname(){
-        return surname;
+        return currentUser != null ? currentUser.getLastName() : null;
+    }
+    
+    /**
+     * Legacy method for testing
+     * @deprecated Use setCurrentUser instead
+     */
+    @Deprecated
+    public static void setName(String settedName){
+        // This method is deprecated and no longer functional
+        LOGGER.warning("setName method is deprecated and no longer functional");
+    }
+    
+    /**
+     * Legacy method for testing
+     * @deprecated Use setCurrentUser instead
+     */
+    @Deprecated
+    public static void setSurname(String settedSurname){
+        // This method is deprecated and no longer functional
+        LOGGER.warning("setSurname method is deprecated and no longer functional");
     }
 }
